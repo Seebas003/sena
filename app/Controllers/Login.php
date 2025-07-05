@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\UsuarioModel;
@@ -14,14 +15,20 @@ class Login extends BaseController
     {
         $usuario = $this->request->getPost('usuario');
         $password = $this->request->getPost('password');
+
         $model = new UsuarioModel();
         $datosUsuario = $model->verificarUsuario($usuario, $password);
-        if($datosUsuario)
-        {
-            session()->set('usuario', $datosUsuario['nombre_usu']);
-            session()->set('perfil', $datosUsuario['id_perfil']);
-            switch($datosUsuario['id_perfil'])
-            {
+
+        if ($datosUsuario) {
+            // Iniciar sesión
+            session()->set([
+                'usuario' => $datosUsuario['nombre_usu'],
+                'perfil' => $datosUsuario['id_perfil'],
+                'isLoggedIn' => true
+            ]);
+
+            // Redirigir según perfil
+            switch ($datosUsuario['id_perfil']) {
                 case 1:
                     return redirect()->to('/empleados');
                 case 2:
@@ -31,9 +38,8 @@ class Login extends BaseController
                 default:
                     return redirect()->to('/login');
             }
-        }else
-        {
-            return redirect()->back()->with('mensaje','Credenciales Incorrectas');
+        } else {
+            return redirect()->back()->with('mensaje', 'Credenciales incorrectas');
         }
     }
 
@@ -43,5 +49,3 @@ class Login extends BaseController
         return redirect()->to('/login');
     }
 }
-
-?>
