@@ -1,0 +1,6 @@
+/vendor/
+.env
+*.log
+/public/build/
+writable/cache/*
+writable/logs/*
