@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers;
-use App\Controllers\BaseController;
+
 use App\Models\UsuarioModel;
 
 class Login extends BaseController
@@ -16,28 +16,31 @@ class Login extends BaseController
         $usuario = $this->request->getPost('usuario');
         $password = $this->request->getPost('password');
 
-        $model = new UsuarioModel();
-        $datosUsuario = $model->verificarUsuario($usuario, $password);
+        $usuarioModel = new UsuarioModel();
+        $datosUsuario = $usuarioModel->where('nombre_usuario', $usuario)->first();
 
-        if ($datosUsuario) {
-            // Iniciar sesión
-            session()->set([
-                'usuario' => $datosUsuario['nombre_usu'],
-                'perfil' => $datosUsuario['id_perfil'],
-                'isLoggedIn' => true
-            ]);
+        if ($datosUsuario && password_verify($password, $datosUsuario['pass_usuario'])) {
+            $data = [
+                'id_usuario' => $datosUsuario['id_usuario'],
+                'nombre_usuario' => $datosUsuario['nombre_usuario'],
+                'id_perfil' => $datosUsuario['id_perfil'],
+                'logueado' => true
+            ];
+            session()->set($data);
 
-            // Redirigir según perfil
-            switch ($datosUsuario['id_perfil']) {
-                case 1:
-                    return redirect()->to('/empleados');
-                case 2:
-                    return redirect()->to('/secretaria');
-                case 3:
-                    return redirect()->to('/vendedor');
-                default:
-                    return redirect()->to('/login');
-            }
+switch ($datosUsuario['id_perfil']) {
+    case 1: 
+        return redirect()->to('/dashboard/aprendiz');
+    case 2: 
+        return redirect()->to('/dashboard');
+    case 3: 
+        return redirect()->to('/dashboard/instructor');
+    case 4: 
+        return redirect()->to('/dashboard/administrativo');
+    default:
+        return redirect()->to('/login')->with('mensaje', 'Perfil no válido');
+}
+
         } else {
             return redirect()->back()->with('mensaje', 'Credenciales incorrectas');
         }

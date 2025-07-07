@@ -250,8 +250,8 @@
     <body>
         <header>
             <div class="top-right-buttons">
-                <a href="index.html" class="top-right-button">Inicio</a>
-                <a href="http://localhost/ProjectSIA/public/SIA/" class="top-right-button">Sobre Nosotros</a>
+                <a href="http://localhost/sena/public/sena/" class="top-right-button">Inicio</a>
+               <a href="" class="top-right-button">Sobre Nosotros</a>
             </div>
         </header>
         
@@ -271,7 +271,7 @@
                       <input type="password" id="password" name="password" placeholder="Contraseña" required />
                       <i class="toggle-password" onclick="togglePassword()"></i> 
                     </div>
-                    <button href="dashboard.php" class="login-btn-entrar">Entrar</button>
+                    <button type="submit" class="login-btn-entrar">Entrar</button>
                 </form>
                 <article class = "article-login-container">
                     <h3>o</h3>
