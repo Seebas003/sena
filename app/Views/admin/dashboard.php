@@ -6,17 +6,19 @@
   <title>Dashboard Administrador SENA</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+
   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: #1e1e2f;
-      color: #fff;
+      background-color: #ffffff;
+      color: #000000;
       display: flex;
     }
     .sidebar {
       width: 250px;
-      background: #111;
+      background: #006B2D;
       padding: 20px;
       height: 100vh;
       position: fixed;
@@ -28,7 +30,7 @@
       box-shadow: 2px 0 10px rgba(255, 65, 108, 0.3); 
     }
     .sidebar a {
-      color: #39FF14; 
+      color: #fcfcfc; 
       text-decoration: none;
       font-weight: 600;
       display: flex;
@@ -50,6 +52,7 @@
     .dashboard-header {
       text-align: center;
       margin-bottom: 30px;
+      color: #006B2D;
     }
     .cards {
       display: grid;
@@ -57,11 +60,11 @@
       gap: 20px;
     }
     .card {
-      background: #222;
+      background: #42f15918;
       padding: 20px;
       border-radius: 10px;
       text-align: center;
-      box-shadow: 0 0 15px rgba(255, 65, 108, 0.3);
+      box-shadow: 0 0 15px rgba(109, 108, 108, 0.767);
       transition: transform 0.3s;
       cursor: pointer;
     }
@@ -70,14 +73,14 @@
     }
     .card i {
       font-size: 40px;
-      color: #39FF14; 
+      color: #006B2D; 
       margin-bottom: 15px;
     }
     .section {
       margin-top: 20px;
-      background: #333;
       padding: 20px;
       border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(90, 90, 90, 0.541);
     }
     h2 i {
       margin-right: 10px;
@@ -94,14 +97,14 @@
       vertical-align: middle;
     }
     th {
-      background: #39FF14; 
-      color: #000;
+      background: #42f15918; 
+      color: #0e0d0d;
     }
     .btn {
       margin: 5px 2px;
       padding: 6px 10px;
-      background: #39FF14;
-      color: #000;
+      background: #42f15918;
+      color: #000000;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -109,11 +112,14 @@
       font-size: 0.9rem;
     }
     .btn:hover {
-      background: #32cc10;
+      background: #000000;
     }
     .btn-accion {
       width: 90px;
       display: inline-block;
+    }
+    .one {
+      background: #42f15918;
     }
   </style>
 </head>
@@ -158,10 +164,9 @@
         </div>
       </h2>
 
-      <table>
+      <table id="tablaUsuarios">
         <thead>
           <tr>
-            <th>ID Usuario</th>
             <th>Nombre</th>
             <th>Correo</th>
             <th>No. Documento</th>
@@ -174,7 +179,6 @@
           <?php if (!empty($usuarios)): ?>
             <?php foreach ($usuarios as $usuario): ?>
               <tr>
-                <td><?= esc($usuario['id_usuario']) ?></td>
                 <td><?= esc($usuario['nombre_usuario']) ?></td>
                 <td><?= esc($usuario['correo']) ?></td>
                 <td><?= esc($usuario['no_documento']) ?></td>
@@ -200,6 +204,9 @@
     </section>
   </div>
 
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script>
     function showSection(sectionId) {
       document.querySelectorAll('.section').forEach(section => {
@@ -210,7 +217,7 @@
 
     function desactivarUsuario(id) {
       if (confirm("¿Seguro que quieres desactivar este usuario?")) {
-        fetch('/usuario/desactivar/' + id)
+        fetch('<?= base_url('usuario/desactivar/') ?>' + id)
           .then(response => response.json())
           .then(data => {
             if (data.success) {
@@ -225,7 +232,7 @@
 
     function activarUsuario(id) {
       if (confirm("¿Seguro que quieres activar este usuario?")) {
-        fetch('/usuario/activar/' + id)
+        fetch('<?= base_url('usuario/activar/') ?>' + id)
           .then(response => response.json())
           .then(data => {
             if (data.success) {
@@ -240,6 +247,11 @@
 
     window.onload = function () {
       showSection('usuarios');
+      $('#tablaUsuarios').DataTable({
+        language: {
+          url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        }
+      });
     };
   </script>
 </body>

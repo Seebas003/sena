@@ -24,12 +24,10 @@ $routes->get('usuario/editar/(:num)', 'Usuario::editar/$1');
 $routes->post('usuario/actualizar', 'Usuario::actualizar');
 $routes->get('usuario/desactivar/(:num)', 'Usuario::desactivar/$1');
 $routes->get('usuario/activar/(:num)', 'Usuario::activar/$1');
+$routes->get('usuario/exportarExcel', 'Usuario::exportarExcel');
 
 
-/* $routes->get('/usuario', 'Usuario::index');
-$routes->post('/usuario/editar', 'Usuario::editar');
-$routes->get('/usuario/desactivar/(:num)', 'Usuario::desactivar/$1');
-$routes->post('/usuario/agregar', 'Usuario::agregar'); */
+
 
 
 

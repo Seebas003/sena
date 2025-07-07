@@ -3,31 +3,40 @@
 namespace App\Controllers;
 
 use App\Models\UsuarioModel;
-use CodeIgniter\Controller;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class Usuario extends BaseController
 {
-    // Muestra el dashboard con la tabla de usuarios
+    // ✅ Muestra el dashboard con los usuarios + nombre_perfil
     public function index()
-    {
-        $usuarioModel = new UsuarioModel();
-        $data['usuarios'] = $usuarioModel->findAll();
+{
+    $db = \Config\Database::connect();
 
-        return view('admin/dashboard', $data);
-    }
+    $query = $db->table('usuario u')
+        ->select('u.*, p.nombre_perfil')
+        ->join('perfil p', 'u.id_perfil = p.id_perfil')
+        ->get();
 
-    // Muestra el formulario para agregar un nuevo usuario
+    $data['usuarios'] = $query->getResultArray();
+
+    return view('admin/dashboard', $data);
+}
+
+    // ✅ Muestra el formulario para agregar un nuevo usuario
     public function nuevo()
     {
         return view('usuarios/nuevo');
     }
 
-    // Procesa y guarda un nuevo usuario
+    // ✅ Procesa y guarda un nuevo usuario
     public function agregar()
     {
         $usuarioModel = new UsuarioModel();
 
-        // Encriptar contraseña
         $clavePlano = $this->request->getPost('clave');
         $claveEncriptada = password_hash($clavePlano, PASSWORD_DEFAULT);
 
@@ -37,15 +46,14 @@ class Usuario extends BaseController
             'no_documento'   => $this->request->getPost('documento'),
             'pass_usuario'   => $claveEncriptada,
             'id_perfil'      => $this->request->getPost('perfil'),
-            'estado'         => 1 // Activo por defecto
+            'estado'         => 1
         ];
 
         $usuarioModel->insert($data);
-
         return redirect()->to('/usuario')->with('success', 'Usuario agregado exitosamente.');
     }
 
-    // Muestra el formulario para editar un usuario existente
+    // ✅ Muestra el formulario de edición
     public function editar($id)
     {
         $usuarioModel = new UsuarioModel();
@@ -59,57 +67,118 @@ class Usuario extends BaseController
         return view('usuarios/editar', $data);
     }
 
-    // Procesa la actualización de un usuario
-    public function actualizar()
-    {
-        $usuarioModel = new UsuarioModel();
-        $id = $this->request->getPost('id');
+    // ✅ Procesa la actualización del usuario
+    // app/Controllers/Usuario.php
 
-        if (!$id) {
-            return redirect()->to('/usuario')->with('error', 'ID de usuario no recibido.');
-        }
+public function actualizar()
+{
+    $usuarioModel = new UsuarioModel();
+    $id = $this->request->getPost('id');
 
-        $data = [
-            'nombre_usuario' => $this->request->getPost('nombre'),
-            'correo'         => $this->request->getPost('correo'),
-            'no_documento'   => $this->request->getPost('documento'),
-            'id_perfil'      => $this->request->getPost('perfil')
-        ];
-
-        // Si se envió una nueva contraseña, la encriptamos
-        $clave = $this->request->getPost('clave');
-        if (!empty($clave)) {
-            $data['pass_usuario'] = password_hash($clave, PASSWORD_DEFAULT);
-        }
-
-        $usuarioModel->update($id, $data);
-
-        return redirect()->to('/usuario')->with('success', 'Usuario actualizado correctamente.');
+    if (!$id) {
+        return redirect()->to('/usuario')->with('error', 'ID de usuario no recibido.');
     }
 
-    // Desactiva un usuario (estado = 0)
+    // Datos base
+    $data = [
+        'nombre_usuario' => $this->request->getPost('nombre'),
+        'correo'         => $this->request->getPost('correo'),
+        'no_documento'   => $this->request->getPost('documento'),
+        'id_perfil'      => $this->request->getPost('perfil')
+    ];
+
+    // Verificar si hay una nueva contraseña
+    $clave = $this->request->getPost('clave');
+    if (!empty($clave)) {
+        $data['pass_usuario'] = password_hash($clave, PASSWORD_DEFAULT);
+    }
+
+    $usuarioModel->update($id, $data);
+
+    return redirect()->to('/usuario')->with('success', 'Usuario actualizado correctamente.');
+}
+
+
+    // ✅ Desactiva un usuario
     public function desactivar($id)
     {
         $usuarioModel = new UsuarioModel();
-
         if ($usuarioModel->find($id)) {
             $usuarioModel->update($id, ['estado' => 0]);
             return $this->response->setJSON(['success' => true]);
         }
-
         return $this->response->setJSON(['success' => false, 'message' => 'Usuario no encontrado']);
     }
 
-    // Activa un usuario (estado = 1)
+    // ✅ Activa un usuario
     public function activar($id)
+    {
+        $usuarioModel = new UsuarioModel();
+        if ($usuarioModel->find($id)) {
+            $usuarioModel->update($id, ['estado' => 1]);
+            return $this->response->setJSON(['success' => true]);
+        }
+        return $this->response->setJSON(['success' => false, 'message' => 'Usuario no encontrado']);
+    }
+   public function exportarExcel()
 {
     $usuarioModel = new \App\Models\UsuarioModel();
+    $usuarios = $usuarioModel->obtenerUsuariosConPerfil();
 
-    if ($usuarioModel->find($id)) {
-        $usuarioModel->update($id, ['estado' => 1]);
-        return $this->response->setJSON(['success' => true]);
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Usuarios SENA');
+
+    // Encabezados
+    $headers = ['Nombre', 'Correo', 'Documento', 'Perfil', 'Estado'];
+    $columnas = ['A', 'B', 'C', 'D', 'E'];
+
+    foreach ($headers as $i => $header) {
+        $sheet->setCellValue($columnas[$i] . '1', $header);
     }
 
-    return $this->response->setJSON(['success' => false, 'message' => 'Usuario no encontrado']);
+    // Estilo de encabezado
+    $headerStyle = [
+        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '28a745']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+    ];
+    $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+    // Contenido de datos
+    $fila = 2;
+    foreach ($usuarios as $usuario) {
+        $estadoTexto = $usuario['estado'] == 1 ? 'Activo' : 'Inactivo';
+
+        $sheet->setCellValue("A$fila", $usuario['nombre_usuario']);
+        $sheet->setCellValue("B$fila", $usuario['correo']);
+        $sheet->setCellValue("C$fila", $usuario['no_documento']);
+        $sheet->setCellValue("D$fila", $usuario['nombre_perfil']);
+        $sheet->setCellValue("E$fila", $estadoTexto);
+
+        $fila++;
+    }
+
+    // Estilo para datos
+    $dataRange = "A2:E" . ($fila - 1);
+    $sheet->getStyle($dataRange)->applyFromArray([
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+    ]);
+
+    // Autoajustar columnas
+    foreach ($columnas as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Generar el archivo
+    $writer = new Xlsx($spreadsheet);
+    $filename = 'usuarios_' . date('Ymd_His') . '.xlsx';
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+    $writer->save('php://output');
+    exit;
 }
 }
