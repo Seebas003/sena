@@ -1,23 +1,3 @@
-<?php foreach ($usuarios as $usuario): ?>
-<tr>
-  <td><?= esc($usuario['nombre_usuario']) ?></td>
-  <td><?= esc($usuario['correo']) ?></td>
-  <td><?= esc($usuario['no_documento']) ?></td>
-  <td><?= esc($usuario['pass_usuario']) ?></td>
-  <td><?= esc($usuario['id_perfil']) ?></td>
-  <td>
-    <button onclick="editarUsuario(
-      '<?= $usuario['id_usuario'] ?>',
-      '<?= $usuario['nombre_usuario'] ?>',
-      '<?= $usuario['correo'] ?>',
-      '<?= $usuario['no_documento'] ?>',
-      '<?= $usuario['pass_usuario'] ?>',
-      '<?= $usuario['id_perfil'] ?>'
-        )">Editar</button>
-    <button onclick="desactivarUsuario(<?= $usuario['id_usuario'] ?>)">Desactivar</button>
-  </td>
-</tr>
-<?php endforeach; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -94,7 +74,6 @@
       margin-bottom: 15px;
     }
     .section {
-      display: none;
       margin-top: 20px;
       background: #333;
       padding: 20px;
@@ -110,35 +89,31 @@
     }
     th, td {
       border: 1px solid #ddd;
-      padding: 10px;
+      padding: 6px 8px;
       text-align: center;
+      vertical-align: middle;
     }
     th {
       background: #39FF14; 
       color: #000;
     }
-    button {
+    .btn {
       margin: 5px 2px;
-      padding: 5px 10px;
+      padding: 6px 10px;
       background: #39FF14;
       color: #000;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
-    button:hover {
+    .btn:hover {
       background: #32cc10;
     }
-    input, select {
-      margin: 5px 0;
-      padding: 8px;
-      width: 100%;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-    }
-    form {
-      margin-top: 15px;
+    .btn-accion {
+      width: 90px;
+      display: inline-block;
     }
   </style>
 </head>
@@ -149,7 +124,7 @@
     <a href="#" onclick="showSection('configuracion')"><i class="fas fa-cogs"></i> Configuración</a>
     <a href="#" onclick="showSection('auditorias')"><i class="fas fa-user-shield"></i> Auditorías</a>
     <a href="#" onclick="showSection('soporte')"><i class="fas fa-life-ring"></i> Soporte</a>
-    <a href="Rol.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    <a href="<?= base_url('/login') ?>"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
   </div>
 
   <div class="content">
@@ -164,91 +139,64 @@
         <h3>Usuarios</h3>
         <p>Administrar cuentas</p>
       </div>
-      <div class="card" onclick="showSection('reportes')">
-        <i class="fas fa-chart-line"></i>
-        <h3>Reportes</h3>
-        <p>Estadísticas y métricas</p>
-      </div>
-      <div class="card" onclick="showSection('auditorias')">
-        <i class="fas fa-user-shield"></i>
-        <h3>Auditorías</h3>
-        <p>Historial de acciones</p>
-      </div>
     </section>
 
     <section id="usuarios" class="section">
-      <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
-
-      <button onclick="mostrarFormularioAgregar()">Agregar Usuario</button>
+      <h2 style="display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-users"></i> Gestión de Usuarios</span>
+        <div style="display: flex; gap: 10px;">
+          <a href="<?= base_url('usuario/nuevo') ?>">
+            <button class="btn">
+              <i class="fas fa-user-plus"></i> Agregar
+            </button>
+          </a>
+          <a href="<?= base_url('usuario/exportarExcel') ?>">
+            <button class="btn">
+              <i class="fas fa-file-excel"></i> Descargar Excel
+            </button>
+          </a>
+        </div>
+      </h2>
 
       <table>
-        <tr>
-          <th>Nombre</th>
-          <th>Correo</th>
-          <th>Número de Documento</th>
-          <th>Contraseña</th>
-          <th>ID Perfil</th>
-          <th>Acciones</th>
-        </tr>
-        <?php foreach ($usuarios as $usuario): ?>
-        <tr>
-          <td><?= esc($usuario['nombre_usuario']) ?></td>
-          <td><?= esc($usuario['correo']) ?></td>
-          <td><?= esc($usuario['no_documento']) ?></td>
-          <td><?= esc($usuario['pass_usuario']) ?></td>
-          <td><?= esc($usuario['id_perfil']) ?></td>
-          <td>
-            <button onclick="editarUsuario(
-              '<?= $usuario['id_usuario'] ?>',
-              '<?= $usuario['nombre_usuario'] ?>',
-              '<?= $usuario['correo'] ?>',
-              '<?= $usuario['no_documento'] ?>',
-              '<?= $usuario['pass_usuario'] ?>',
-              '<?= $usuario['id_perfil'] ?>'
-            )">Editar</button>
-            <button onclick="desactivarUsuario(<?= $usuario['id_usuario'] ?>)">Desactivar</button>
-          </td>
-        </tr>
-        <?php endforeach; ?>
+        <thead>
+          <tr>
+            <th>ID Usuario</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>No. Documento</th>
+            <th>Perfil</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!empty($usuarios)): ?>
+            <?php foreach ($usuarios as $usuario): ?>
+              <tr>
+                <td><?= esc($usuario['id_usuario']) ?></td>
+                <td><?= esc($usuario['nombre_usuario']) ?></td>
+                <td><?= esc($usuario['correo']) ?></td>
+                <td><?= esc($usuario['no_documento']) ?></td>
+                <td><?= esc($usuario['id_perfil']) ?></td>
+                <td><?= $usuario['estado'] == 1 ? 'Activo' : 'Inactivo' ?></td>
+                <td>
+                  <a href="<?= base_url('usuario/editar/' . $usuario['id_usuario']) ?>">
+                    <button class="btn btn-accion">Editar</button>
+                  </a>
+                  <?php if ($usuario['estado'] == 1): ?>
+                    <button class="btn btn-accion" onclick="desactivarUsuario(<?= $usuario['id_usuario'] ?>)">Desactivar</button>
+                  <?php else: ?>
+                    <button class="btn btn-accion" onclick="activarUsuario(<?= $usuario['id_usuario'] ?>)">Activar</button>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr><td colspan="7">No hay usuarios registrados.</td></tr>
+          <?php endif; ?>
+        </tbody>
       </table>
-
-      <!-- Formulario para agregar -->
-      <div id="formAgregar" style="display:none;">
-        <h3>Agregar Usuario</h3>
-        <form id="formNuevoUsuario">
-          <input type="text" name="nombre" placeholder="Nombre" required>
-          <input type="email" name="correo" placeholder="Correo" required>
-          <input type="text" name="documento" placeholder="No. Documento" required>
-          <input type="password" name="clave" placeholder="Contraseña" required>
-          <select name="perfil">
-            <option value="1">Administrador</option>
-            <option value="2">Instructor</option>
-            <option value="3">Aprendiz</option>
-            <option value="4">Administrativo</option>
-          </select>
-          <button type="submit">Guardar</button>
-        </form>
-      </div>
-
-      <!-- Formulario para editar -->
-      <div id="formEditar" style="display:none;">
-        <h3>Editar Usuario</h3>
-        <form id="formEditarUsuario">
-          <input type="hidden" name="id" id="edit_id">
-          <input type="text" name="nombre" id="edit_nombre" placeholder="Nombre" required>
-          <input type="email" name="correo" id="edit_correo" placeholder="Correo" required>
-          <input type="text" name="documento" id="edit_documento" placeholder="No. Documento" required>
-          <input type="password" name="clave" id="edit_clave" placeholder="Contraseña" required>
-          <select name="perfil" id="edit_perfil">
-            <option value="1">Administrador</option>
-            <option value="2">Instructor</option>
-            <option value="3">Aprendiz</option>
-            <option value="4">Administrativo</option>
-          </select>
-          <button type="submit">Actualizar</button>
-        </form>
-      </div>
-
     </section>
   </div>
 
@@ -260,38 +208,39 @@
       document.getElementById(sectionId).style.display = 'block';
     }
 
-    function mostrarFormularioAgregar() {
-      document.getElementById('formAgregar').style.display = 'block';
-      document.getElementById('formEditar').style.display = 'none';
-    }
-
-    function editarUsuario(id, nombre, correo, documento, clave, perfil) {
-      document.getElementById('formEditar').style.display = 'block';
-      document.getElementById('formAgregar').style.display = 'none';
-
-      document.getElementById('edit_id').value = id;
-      document.getElementById('edit_nombre').value = nombre;
-      document.getElementById('edit_correo').value = correo;
-      document.getElementById('edit_documento').value = documento;
-      document.getElementById('edit_clave').value = clave;
-      document.getElementById('edit_perfil').value = perfil;
-    }
-
     function desactivarUsuario(id) {
       if (confirm("¿Seguro que quieres desactivar este usuario?")) {
-        alert("Usuario " + id + " desactivado (simulado)");
+        fetch('/usuario/desactivar/' + id)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("Usuario desactivado.");
+              location.reload();
+            } else {
+              alert(data.message || "Error al desactivar.");
+            }
+          });
       }
     }
 
-    document.getElementById('formNuevoUsuario').addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert("Usuario agregado (simulado)");
-    });
+    function activarUsuario(id) {
+      if (confirm("¿Seguro que quieres activar este usuario?")) {
+        fetch('/usuario/activar/' + id)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("Usuario activado.");
+              location.reload();
+            } else {
+              alert(data.message || "Error al activar.");
+            }
+          });
+      }
+    }
 
-    document.getElementById('formEditarUsuario').addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert("Usuario actualizado (simulado)");
-    });
+    window.onload = function () {
+      showSection('usuarios');
+    };
   </script>
 </body>
 </html>

@@ -211,7 +211,7 @@
         <a href="#" onclick="showSection('incapacidades')"><i class="fas fa-file-medical"></i> Incapacidades</a>
         <a href="#" onclick="showSection('trabajos')"><i class="fas fa-tasks"></i> Revisión Trabajos</a>
         <a href="#" onclick="showSection('mensajes')"><i class="fas fa-comments"></i> Mensajes</a>
-        <a href="Rol.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        <a href="<?= base_url('/login') ?>"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
     </div>
 
     <div class="content">

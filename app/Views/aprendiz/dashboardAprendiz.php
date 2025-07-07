@@ -167,7 +167,7 @@
         <a href="#" onclick="showSection('certificado')"><i class="fas fa-file-alt"></i> Certificado</a>
         <a href="#" onclick="showSection('incapacidades')"><i class="fas fa-file-medical"></i> Incapacidades</a>
         <a href="#" onclick="showSection('trabajos')"><i class="fas fa-tasks"></i> Mis Trabajos</a>
-        <a href="Rol.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+        <a href="<?= base_url('/login') ?>"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
     </div>
 
     <div class="content">

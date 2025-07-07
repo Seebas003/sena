@@ -32,5 +32,11 @@ class Dashboard extends BaseController
         }
         return view('instructor/dashboardinstructor');
     }
+    public function dashboard()
+    {       
+        $usuarioModel = new \App\Models\UsuarioModel();
+        $data['usuarios'] = $usuarioModel->findAll();
+        return view('paginas/dashboard', $data);
+    }
 
 }
