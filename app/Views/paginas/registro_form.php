@@ -4,13 +4,21 @@ function traducirMensaje($mensaje) {
         'The pass_usuario field is required.' => 'El campo contraseña es obligatorio.',
         'The confirm-password field does not match the pass_usuario field.' => 'La confirmación de la contraseña no coincide.',
         'The pass_usuario field must be at least 6 characters in length.' => 'La contraseña debe tener al menos 6 caracteres.',
-        'The nombre_usuario field is required.' => 'El campo nombre es obligatorio.',
+        'The nombre_usuario field is required.' => 'El campo nombre de usuario es obligatorio.',
         'The correo field is required.' => 'El campo correo es obligatorio.',
         'The correo field must contain a valid email address.' => 'El correo electrónico no es válido.',
+        'The correo field must contain a unique value.' => 'El correo ya está registrado.',
+        'The no_documento field is required.' => 'El campo número de documento es obligatorio.',
+        'The no_documento field must contain only numbers.' => 'El número de documento debe ser numérico.',
+        'The no_documento field must contain a unique value.' => 'Este número de documento ya está registrado.',
+        'The nombres field is required.' => 'El campo nombres es obligatorio.',
+        'The apellidos field is required.' => 'El campo apellidos es obligatorio.',
     ];
+
     return $traducciones[$mensaje] ?? $mensaje;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -18,11 +26,13 @@ function traducirMensaje($mensaje) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registro de Usuario</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: #ffffff;
+      background: url('https://www.bloomberglinea.com/resizer/v2/RAEW7WILHFA3JJHMQAYOWKN4EM.jpeg?auth=2d9996b6e3bd09f86ba0666285d6c9a921996fb4e8ae4470773335616e80f35e&width=800&height=533&quality=80&smart=true') no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -30,10 +40,10 @@ function traducirMensaje($mensaje) {
     }
 
     .form-container {
-      background: #f0f0f0;
+      background: rgba(240, 240, 240, 0.95);
       padding: 35px 40px;
       border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
       width: 400px;
       position: relative;
     }
@@ -129,35 +139,33 @@ function traducirMensaje($mensaje) {
     }
 
     .close-btn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: transparent; /* Fondo transparente */
-  border: none;
-  font-size: 18px;
-  color: #900;
-  cursor: pointer;
-  padding: 5px; /* Espacio para mejor clic */
-  border-radius: 50%; /* Forma circular */
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      color: #900;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
 
-/* Elimina el efecto verde al hacer clic */
-.close-btn:active, 
-.close-btn:focus {
-  background-color: transparent !important;
-  outline: none;
-}
+    .close-btn:active, 
+    .close-btn:focus {
+      background-color: transparent !important;
+      outline: none;
+    }
 
-/* Efecto hover suave */
-.close-btn:hover {
-  background-color: rgba(153, 0, 0, 0.1);
-}
+    .close-btn:hover {
+      background-color: rgba(153, 0, 0, 0.1);
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translate(-50%, -10px); }
@@ -186,8 +194,14 @@ function traducirMensaje($mensaje) {
     <h2>Registro de Usuario</h2>
 
     <form action="<?= base_url('/registro/guardar') ?>" method="post">
-      <label for="nombre">Nombre Completo</label>
-      <input type="text" id="nombre" name="nombre_usuario" required />
+      <label>Nombre de usuario</label>
+      <input type="text" name="nombre_usuario" required>
+
+      <label>Nombres</label>
+      <input type="text" name="nombres" required>
+
+      <label>Apellidos</label>
+      <input type="text" name="apellidos" required>
 
       <label for="correo">Correo Electrónico</label>
       <input type="email" id="correo" name="correo" required />
@@ -215,6 +229,19 @@ function traducirMensaje($mensaje) {
         setTimeout(() => errorBox.remove(), 300);
       }
     }
+    <?php if (session()->getFlashdata('mensaje')): ?>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: '<?= session()->getFlashdata('mensaje') ?>',
+        confirmButtonColor: '#006B2D',
+        timer: 3000,
+        timerProgressBar: true
+    });
+</script>
+<?php endif; ?>
+
 
     setTimeout(() => {
       cerrarError();

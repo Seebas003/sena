@@ -9,13 +9,16 @@ class UsuarioModel extends Model
     protected $table      = 'usuario';
     protected $primaryKey = 'id_usuario';
     protected $allowedFields = [
-        'nombre_usuario',
-        'correo',
-        'no_documento',
-        'pass_usuario',
-        'id_perfil',
-        'estado'
-    ];
+    'nombre_usuario',
+    'nombres',
+    'apellidos',
+    'correo',
+    'no_documento',
+    'pass_usuario',
+    'id_perfil',
+    'estado'
+];
+
 
     protected $useTimestamps = false;
     protected $returnType    = 'array';

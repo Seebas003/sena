@@ -6,6 +6,7 @@
     <title>Dashboard Aprendiz SENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             margin: 0;
@@ -194,67 +195,140 @@
             </div>
         </section>
 
-        <section id="horario" class="section" style="display: block;">
-            <h2><i class="fas fa-calendar-alt"></i> Mi Horario Semanal</h2>
-            <table>
-                <tr>
-                    <th>Hora</th><th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th>
-                </tr>
-                <tr>
-                    <td>7:00-9:00</td>
-                    <td>Programación<br><small style="color: #666;">Aula 203</small></td>
-                    <td>Base de datos<br><small style="color: #666;">Lab. 4</small></td>
-                    <td>Programación<br><small style="color: #666;">Aula 203</small></td>
-                    <td>Base de datos<br><small style="color: #666;">Lab. 4</small></td>
-                    <td>Proyecto<br><small style="color: #666;">Aula 105</small></td>
-                </tr>
-                <tr>
-                    <td>9:00-11:00</td>
-                    <td>Matemáticas<br><small style="color: #666;">Aula 201</small></td>
-                    <td>Inglés Técnico<br><small style="color: #666;">Aula 102</small></td>
-                    <td>Matemáticas<br><small style="color: #666;">Aula 201</small></td>
-                    <td>Inglés Técnico<br><small style="color: #666;">Aula 102</small></td>
-                    <td>Taller<br><small style="color: #666;">Lab. 3</small></td>
-                </tr>
-            </table>
-        </section>
+       <section id="horario" class="section" style="display: block;">
+  <h2><i class="fas fa-calendar-alt"></i> Mi Horario Semanal</h2>
+
+  <!-- Formulario de carga -->
+  <form action="<?= base_url('/horario/importar') ?>" method="post" enctype="multipart/form-data" style="margin-bottom: 20px;">
+    <input type="file" name="archivo_excel" accept=".xlsx,.xls" required>
+    <button type="submit"><i class="fas fa-upload"></i> Cargar Programación</button>
+  </form>
+
+  <!-- Mensaje de éxito -->
+  <?php if (session()->getFlashdata('success')): ?>
+    <div style="background-color: #d4edda; padding: 10px; margin-top: 10px; border-left: 5px solid #28a745;">
+      <?= esc(session()->getFlashdata('success')) ?>
+    </div>
+  <?php endif; ?>
+
+  <!-- Tabla de horario -->
+  <?php if (isset($horario) && count($horario) > 0): ?>
+    <pre><?php print_r($horario); ?></pre>
+
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; margin-top: 20px; text-align: center;">
+      <thead style="background-color: #f8f9fa;">
+        <tr>
+          <th>Hora</th>
+          <th>Lunes</th>
+          <th>Martes</th>
+          <th>Miércoles</th>
+          <th>Jueves</th>
+          <th>Viernes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php
+          $horas = [];
+
+          // Agrupar por bloque horario (hora_inicio - hora_fin)
+          foreach ($horario as $fila) {
+            $horaClave = esc($fila['hora_inicio']) . ' - ' . esc($fila['hora_fin']);
+            if (!isset($horas[$horaClave])) {
+              $horas[$horaClave] = [
+                'Lunes' => '', 'Martes' => '', 'Miércoles' => '', 'Jueves' => '', 'Viernes' => ''
+              ];
+            }
+
+            $contenido = esc($fila['asignatura']) . '<br><small>' . esc($fila['aula']) . '</small>';
+            // Si ya hay contenido en esa celda, lo concatenamos (varios eventos en la misma hora/día)
+            if (!empty($horas[$horaClave][$fila['dia']])) {
+              $horas[$horaClave][$fila['dia']] .= '<hr>' . $contenido;
+            } else {
+              $horas[$horaClave][$fila['dia']] = $contenido;
+            }
+          }
+
+          // Renderizar tabla
+          foreach ($horas as $hora => $dias) {
+            echo "<tr><td><strong>$hora</strong></td>";
+            foreach (['Lunes','Martes','Miércoles','Jueves','Viernes'] as $dia) {
+              echo "<td>" . ($dias[$dia] ?? '') . "</td>";
+            }
+            echo "</tr>";
+          }
+        ?>
+      </tbody>
+    </table>
+  <?php else: ?>
+    <p style="color: #666;">📂 Aún no se ha cargado programación para tu ficha.</p>
+  <?php endif; ?>
+</section>
+
 
         <section id="perfil" class="section">
-            <h2><i class="fas fa-user-edit"></i> Editar Perfil</h2>
-            <form>
-                <label>Nombre Completo:</label>
-                <input type="text" value="Juan Pérez">
-                
-                <label>Correo Electrónico:</label>
-                <input type="email" value="juan.perez@sena.edu.co">
-                
-                <label>Teléfono:</label>
-                <input type="tel" value="3001234567">
-                
-                <button type="submit">Guardar Cambios</button>
-                <button class="delete" type="button">Eliminar Cuenta</button>
-            </form>
-        </section>
+    <h2><i class="fas fa-user-edit"></i> Perfil del Aprendiz</h2>
+
+    <?php if (isset($aprendiz_completo) && $aprendiz_completo): ?>
+        <div class="card" style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <h3 style="color:#006B2D"><i class="fas fa-id-badge"></i> Información Personal</h3>
+            <p><strong>Nombres:</strong> <?= esc($usuario['nombres']) ?></p>
+<p><strong>Apellidos:</strong> <?= esc($usuario['apellidos']) ?></p>
+            <p><strong>Correo:</strong> <?= esc(session()->get('correo')) ?></p>
+            <p><strong>Número de Documento:</strong> <?= esc(session()->get('no_documento')) ?></p>
+            <p><strong>Ficha de Formación:</strong> <?= esc($aprendiz['ficha_formacion'] ?? 'No registrada') ?></p>
+<p><strong>Programa de Formación:</strong> <?= esc($aprendiz['programa_formacion'] ?? 'No registrado') ?></p>
+
+        </div>
+        <p style="color: #006B2D;">✅ Has completado tu perfil de aprendiz.</p>
+    <?php else: ?>
+        <p style="color: #ADFF2F;">⚠️ Aún no has completado tu perfil de aprendiz.</p>
+        <a href="<?= base_url('/aprendiz/formulario') ?>">
+            <button><i class="fas fa-user-plus"></i> Completar Información del Aprendiz</button>
+        </a>
+    <?php endif; ?>
+</section>
+
+
 
         <section id="equipos" class="section">
-            <h2><i class="fas fa-laptop"></i> Registro de Equipos</h2>
-            <form>
-                <label>Tipo de Equipo:</label>
-                <select>
-                    <option>Portátil</option>
-                    <option>Tablet</option>
-                    <option>Celular</option>
-                </select>
-                
-                <label>Marca/Modelo:</label>
-                <input type="text" placeholder="Ej: HP Pavilion 15">
-                
-                <label>Número de Serie:</label>
-                <input type="text" placeholder="Ej: 5CD1234XYZ">
-                
-                <button type="submit"><i class="fas fa-save"></i> Registrar Equipo</button>
-            </form>
-        </section>
+    <h2><i class="fas fa-laptop"></i> Registro de Equipos</h2>
+
+    <!-- ✅ Mensajes Flash -->
+    <?php if(session()->getFlashdata('success')): ?>
+      <div style="background: #d4edda; padding: 10px; margin-bottom: 1rem; border-left: 5px solid #28a745; color: #155724;">
+        <?= session()->getFlashdata('success') ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if(session()->getFlashdata('error')): ?>
+      <div style="background: #f8d7da; padding: 10px; margin-bottom: 1rem; border-left: 5px solid #dc3545; color: #721c24;">
+        <?= session()->getFlashdata('error') ?>
+      </div>
+    <?php endif; ?>
+
+    <!-- Botón para ir a la vista de registro -->
+    <a href="<?= base_url('/equipos') ?>">
+        <button type="button"><i class="fas fa-plus-circle"></i> Registrar Nuevo Equipo</button>
+    </a>
+
+    <h2><i class="fas fa-table"></i> Lista de Equipos Registrados</h2>
+    <table id="tablaEquipos">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Marca/Modelo</th>
+                <th>Serie</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se cargan los equipos por JS -->
+        </tbody>
+    </table>
+</section>
+
+
 
         <section id="certificado" class="section">
             <h2><i class="fas fa-file-alt"></i> Certificado Estudiantil</h2>
@@ -322,40 +396,116 @@
             </div>
         </section>
     </div>
-
-    <script>
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(sectionId).style.display = 'block';
-        }
-
-        function descargarCertificado() {
-            alert("Descargando certificado... (simulación)");
-        }
-
-        function subirIncapacidad() {
-            const file = document.getElementById('incapacidadFile').files[0];
-            if (file) {
-                alert(`Incapacidad "${file.name}" subida correctamente. Se notificará al instructor.`);
-            } else {
-                alert("Por favor selecciona un archivo");
-            }
-        }
-
-        function entregarTrabajo() {
-            const file = document.getElementById('trabajoFile').files[0];
-            if (file) {
-                alert(`Trabajo "${file.name}" entregado correctamente.`);
-            } else {
-                alert("Por favor selecciona un archivo");
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            showSection('horario');
+<script>
+    function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    showSection('horario');
+  });
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'none';
         });
-    </script>
+        document.getElementById(sectionId).style.display = 'block';
+
+        // ✅ Cargar equipos si se entra a la sección "equipos"
+        if (sectionId === 'equipos') {
+            cargarEquipos();
+        }
+    }
+
+    function descargarCertificado() {
+        alert("Descargando certificado... (simulación)");
+    }
+
+    function subirIncapacidad() {
+        const file = document.getElementById('incapacidadFile').files[0];
+        if (file) {
+            alert(`Incapacidad "${file.name}" subida correctamente. Se notificará al instructor.`);
+        } else {
+            alert("Por favor selecciona un archivo");
+        }
+    }
+
+    function entregarTrabajo() {
+        const file = document.getElementById('trabajoFile').files[0];
+        if (file) {
+            alert(`Trabajo "${file.name}" entregado correctamente.`);
+        } else {
+            alert("Por favor selecciona un archivo");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        showSection('horario');
+    });
+
+    function cargarEquipos() {
+    fetch("<?= base_url('/equipos/listar') ?>")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.querySelector("#tablaEquipos tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(equipo => {
+                const fila = `
+                    <tr>
+                        <td>${equipo.tipo_equipo}</td>
+                        <td>${equipo.marca_modelo}</td>
+                        <td>${equipo.numero_serie}</td>
+                        <td>${equipo.estado == 1 ? 'Activo' : 'Inactivo'}</td>
+                        <td>
+                            <button class="btn-delete" onclick="eliminarEquipo(${equipo.id_equipo})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+        });
+}
+    function eliminarEquipo(id) {
+    Swal.fire({
+        title: '¿Eliminar equipo?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`<?= base_url('/equipos/eliminar/') ?>${id}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        '¡Eliminado!',
+                        'El equipo ha sido eliminado.',
+                        'success'
+                    );
+                    cargarEquipos(); // Recarga la tabla
+                } else {
+                    Swal.fire(
+                        'Error',
+                        'No se pudo eliminar el equipo.',
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire('Error', 'Hubo un problema en el servidor.', 'error');
+            });
+        }
+    });
+}
+
+
+</script>
 </body>
 </html>

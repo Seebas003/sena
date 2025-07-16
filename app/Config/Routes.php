@@ -26,6 +26,24 @@ $routes->get('usuario/desactivar/(:num)', 'Usuario::desactivar/$1');
 $routes->get('usuario/activar/(:num)', 'Usuario::activar/$1');
 $routes->get('usuario/exportarExcel', 'Usuario::exportarExcel');
 
+$routes->get('/equipos', 'EquipoController::index');
+$routes->post('/registrar', 'EquipoController::registrar');
+$routes->get('/equipos/desactivar/(:num)', 'EquipoController::desactivar/$1');
+$routes->get('/equipos/listar', 'EquipoController::listar');
+$routes->delete('/equipos/eliminar/(:num)', 'EquipoController::eliminar/$1');
+
+$routes->get('/aprendiz/formulario', 'AprendizController::formulario');
+$routes->post('/aprendiz/guardar', 'AprendizController::guardar');
+
+$routes->post('/horario/cargar', 'HorarioController::cargar');
+$routes->get('/dashboardAprendiz', 'HorarioController::index');
+$routes->get('/horario', 'HorarioController::index');
+$routes->post('/horario/importar', 'HorarioController::importar');
+
+
+
+
+
 
 
 

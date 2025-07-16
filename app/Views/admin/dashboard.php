@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       margin: 0;
@@ -112,8 +112,11 @@
       font-size: 0.9rem;
     }
     .btn:hover {
-      background: #000000;
-    }
+  background: inherit;
+  color: inherit;
+  box-shadow: none;
+  transform: none;
+}
     .btn-accion {
       width: 90px;
       display: inline-block;
@@ -185,15 +188,23 @@
                 <td><?= esc($usuario['id_perfil']) ?></td>
                 <td><?= $usuario['estado'] == 1 ? 'Activo' : 'Inactivo' ?></td>
                 <td>
-                  <a href="<?= base_url('usuario/editar/' . $usuario['id_usuario']) ?>">
-                    <button class="btn btn-accion">Editar</button>
-                  </a>
-                  <?php if ($usuario['estado'] == 1): ?>
-                    <button class="btn btn-accion" onclick="desactivarUsuario(<?= $usuario['id_usuario'] ?>)">Desactivar</button>
-                  <?php else: ?>
-                    <button class="btn btn-accion" onclick="activarUsuario(<?= $usuario['id_usuario'] ?>)">Activar</button>
-                  <?php endif; ?>
-                </td>
+  <a href="<?= base_url('usuario/editar/' . $usuario['id_usuario']) ?>">
+    <button class="btn btn-accion">
+      <i class="fas fa-edit"></i> Editar
+    </button>
+  </a>
+
+  <?php if ($usuario['estado'] == 1): ?>
+    <button class="btn btn-accion" onclick="desactivarUsuario(<?= $usuario['id_usuario'] ?>)">
+      <i class="fas fa-user-slash"></i> Desactivar
+    </button>
+  <?php else: ?>
+    <button class="btn btn-accion" onclick="activarUsuario(<?= $usuario['id_usuario'] ?>)">
+      <i class="fas fa-user-check"></i> Activar
+    </button>
+  <?php endif; ?>
+</td>
+
               </tr>
             <?php endforeach; ?>
           <?php else: ?>
@@ -216,34 +227,73 @@
     }
 
     function desactivarUsuario(id) {
-      if (confirm("¿Seguro que quieres desactivar este usuario?")) {
-        fetch('<?= base_url('usuario/desactivar/') ?>' + id)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              alert("Usuario desactivado.");
-              location.reload();
-            } else {
-              alert(data.message || "Error al desactivar.");
-            }
-          });
-      }
-    }
+    Swal.fire({
+        title: '¿Seguro que quieres desactivar este usuario?',
+        text: "El usuario no podrá acceder más hasta ser reactivado.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, desactivar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('<?= base_url('usuario/desactivar/') ?>' + id)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Desactivado',
+                        'El usuario fue desactivado correctamente.',
+                        'success'
+                    ).then(() => {
+                        location.reload(); // Recarga la tabla o la página
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo desactivar.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Ocurrió un error al conectar con el servidor.', 'error');
+            });
+        }
+    });
+}
 
     function activarUsuario(id) {
-      if (confirm("¿Seguro que quieres activar este usuario?")) {
-        fetch('<?= base_url('usuario/activar/') ?>' + id)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              alert("Usuario activado.");
+  Swal.fire({
+    title: '¿Seguro que quieres activar este usuario?',
+    text: "El usuario podrá acceder nuevamente al sistema.",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, activar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('<?= base_url('usuario/activar/') ?>' + id)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            Swal.fire(
+              'Activado',
+              'El usuario fue activado correctamente.',
+              'success'
+            ).then(() => {
               location.reload();
-            } else {
-              alert(data.message || "Error al activar.");
-            }
-          });
-      }
+            });
+          } else {
+            Swal.fire('Error', data.message || 'No se pudo activar.', 'error');
+          }
+        })
+        .catch(() => {
+          Swal.fire('Error', 'Ocurrió un error al conectar con el servidor.', 'error');
+        });
     }
+  });
+}
+
 
     window.onload = function () {
       showSection('usuarios');
